@@ -31,10 +31,7 @@ public:
         return dot_operation_vector<add_operation_vector<LHS, RHS, T>, _RHS, T>(*this, rhs);
     }
 
-    vector_lazy<T> eval() const
-    {
-        return try_eval<T>(lhs) + try_eval<T>(rhs);
-    }
+    vector_lazy<T> eval() const { return try_eval<T>(lhs) + try_eval<T>(rhs); }
 
     operator vector_lazy<T>() const
     {

@@ -21,7 +21,7 @@ public:
     template<typename _RHS>
     auto operator+(const _RHS &rhs)
     {
-        return add_operation_array_2d<add_operation_array_2d<LHS, RHS, T>, _RHS, T>(lhs, rhs);
+        return add_operation_array_2d<add_operation_array_2d<LHS, RHS, T>, _RHS, T>(*this, rhs);
     }
 
     array2d<T> eval() const { return try_eval<T>(lhs) + try_eval<T>(rhs); }

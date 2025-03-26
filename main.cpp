@@ -64,7 +64,7 @@ void test_vector_lazy()
     // На Release работает только такой код, иначе сигдев
     // auto temp = v2 + v3;
     // auto res = v1 * temp;
-    auto res = v1 * (v2 + v3);
+    auto res = v1 * (v2 + v3 + v1);
     auto eval = res.eval();
     printf("%f\n", eval);
 }
@@ -101,16 +101,21 @@ int main()
     linal::array2d<int> A{
         {
             {1, 2},
-            {3, 4, 5},
-        }};
+        {3, 4, 5},
+    }};
 
-    linal::array2d<int> B{
-            {
-                {5, 4},
-                {3, 2, 1},
+    linal::array2d<int> B{{
+        {5, 4},
+        {3, 2, 1},
             }};
 
-    auto C = (A + B).eval();
+    auto C = (A + B + A).eval();
+    for (int i = 0; i < C.shape.size(); ++i) {
+            for (int j = 0; j < C.shape[i]; ++j) {
+                printf("%d ", C(i, j));
+            }
+            printf("\n");
+        }
 
     return 0;
 }
