@@ -1,0 +1,3 @@
+/home/rokoko/CLionProjects/fedik_proj/cmake-build-debug/CMakeFiles/fedik_proj.dir
+/home/rokoko/CLionProjects/fedik_proj/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/rokoko/CLionProjects/fedik_proj/cmake-build-debug/CMakeFiles/rebuild_cache.dir
