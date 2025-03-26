@@ -12,6 +12,9 @@ class vector_lazy
     template<typename, typename, typename>
     friend class add_operation_vector;
 
+    template<typename, typename, typename>
+    friend class dot_operation_vector;
+
 private:
     std::vector<T> data;
 
@@ -40,7 +43,7 @@ public:
         data = std::move(other.data);
     }
 
-    T &operator[](size_t i) { return this->data[i]; }
+    T &operator[](size_t i) { return this->data[i]; } // Норм делать вот так вот 2 штуки?
     T &operator[](size_t i) const { return this->data[i]; }
 
     vector_lazy &operator=(const vector_lazy &other)
@@ -55,13 +58,10 @@ public:
         return add_operation_vector<vector_lazy<T>, RHS, T>(*this, rhs);
     }
 
-    template<typename P>
-    static vector_lazy try_eval(const P &value)
+    template<typename RHS>
+    auto operator*(const RHS &rhs) const
     {
-        if constexpr (Evaluatable<T>)
-            return value.eval();
-        else
-            return value;
+        return dot_operation_vector<vector_lazy<T>, RHS, T>(*this, rhs);
     }
 };
 

@@ -21,15 +21,14 @@ template <typename T> class matrix
     matrix(std::initializer_list<std::initializer_list<T>> init) : rows(init.size()), cols(init.begin()->size())
     {
         this->data = new T[rows * cols];
-        size_t i = 0, j = 0;
         for (auto row = init.begin(); row != init.end(); ++row)
         {
             for (auto col = row->begin(); col != row->end(); ++col)
             {
-                this->data[i * cols + j++] = *col; // std::distance
+                int i = std::distance(init.begin(), row);
+                int j = std::distance(row->begin(), col);
+                this->data[i * cols + j] = *col; // std::distance
             }
-            ++i;
-            j = 0;
         }
     }
 
@@ -50,14 +49,14 @@ template <typename T> class matrix
         std::copy(rhs.data, rhs.data + rows * cols, this->data);
     }
 
-    T &operator()(int row, int col)
+    T &operator()(int col, int row)
     {
-        return this->data[row * cols + col];
+        return this->data[col * cols + row];
     }
 
-    T &operator()(int row, int col) const
+    T &operator()(int col, int row) const
     {
-        return this->data[row * cols + col];
+        return this->data[col * cols + row];
     }
 
     matrix<T> &operator+=(const matrix<T> &rhs)

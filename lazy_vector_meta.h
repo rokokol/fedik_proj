@@ -3,6 +3,8 @@
 namespace linal {
 template<typename T>
 class vector_lazy;
+template<typename LHS, typename RHS, typename T>
+class dot_operation_vector;
 
 template<typename LHS, typename RHS, typename T>
 class add_operation_vector
@@ -23,21 +25,74 @@ public:
         return add_operation_vector<add_operation_vector<LHS, RHS, T>, _RHS, T>(*this, rhs);
     }
 
+    template<typename _RHS>
+    auto operator*(const _RHS &rhs) const
+    {
+        return dot_operation_vector<add_operation_vector<LHS, RHS, T>, _RHS, T>(*this, rhs);
+    }
+
     vector_lazy<T> eval() const
     {
-        return vector_lazy<T>::template try_eval(lhs) + vector_lazy<T>::template try_eval(rhs);
+        return try_eval<T>(lhs) + try_eval<T>(rhs);
     }
 
     operator vector_lazy<T>() const
     {
-        auto v1 = vector_lazy<T>::template try_eval(lhs);
-        auto v2 = vector_lazy<T>::template try_eval(rhs);
+        vector_lazy<T> v1 = try_eval<T>(lhs);
+        vector_lazy<T> v2 = try_eval<T>(rhs);
 
-        for (int i = 0; i < v1.size; i++) {
-            v2.data[i] += v1.data[i];
+        auto size = std::max(v1.size, v2.size);
+        for (int i = 0; i < size; i++) {
+            v2.data[i % v2.size] += v1.data[i % v1.size];
         }
 
         return v2;
     }
-};
+}; // add
+
+template<typename LHS, typename RHS, typename T>
+class dot_operation_vector
+{
+private:
+    const LHS &lhs;
+    const RHS &rhs;
+
+public:
+    dot_operation_vector(const LHS &lhs, const RHS &rhs)
+        : lhs(lhs)
+        , rhs(rhs)
+    {}
+
+    template<typename _RHS>
+    auto operator+(const _RHS &rhs) const
+    {
+        return add_operation_vector<dot_operation_vector<LHS, RHS, T>, _RHS, T>(*this, rhs);
+    }
+
+    template<typename _RHS>
+    auto operator*(const _RHS &rhs) const
+    {
+        return dot_operation_vector<dot_operation_vector<LHS, RHS, T>, _RHS, T>(*this, rhs);
+    }
+
+    T eval() const
+    {
+        vector_lazy<T> v1 = try_eval<T>(lhs);
+        vector_lazy<T> v2 = try_eval<T>(rhs);
+
+        T result = 0;
+        for (int i = 0; i < v1.size; i++) {
+            result += v1.data[i] * v2.data[i];
+        }
+
+        return result;
+    }
+
+    operator vector_lazy<T>() const
+    {
+        T result = eval();
+        return vector_lazy<T>{result};
+    }
+}; // add
+
 } // namespace linal
