@@ -1,11 +1,11 @@
 #pragma once
-#include "vector.h"
+#include <vector>
 
 namespace sigma_searches {
 template<typename T>
-int linear_search(const linal::vector<T> &arr, T key)
+int linear_search(const std::vector<T> &arr, T key)
 {
-    for (size_t i = 0; i < arr.size; i++) {
+    for (size_t i = 0; i < arr.size(); i++) {
         if (arr[i] == key) {
             return i;
         }
@@ -15,10 +15,10 @@ int linear_search(const linal::vector<T> &arr, T key)
 }
 
 template<typename T>
-int binary_search(const linal::vector<T> &arr, T key)
+int binary_search(const std::vector<T> &arr, T key)
 {
     int low = 0;
-    int high = arr.size;
+    int high = arr.size();
     while (low <= high) {
         int mid = (low + high) / 2;
         if (arr[mid] < key) {
@@ -35,7 +35,7 @@ int binary_search(const linal::vector<T> &arr, T key)
 }
 
 template<typename T>
-int binary_search_recursion(const linal::vector<T> &arr, T key, T low, T high)
+int binary_search_recursion(const std::vector<T> &arr, T key, T low, T high)
 {
     if (low == high && arr[low] != key || low > high) {
         return -1;

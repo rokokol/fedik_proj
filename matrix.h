@@ -1,135 +1,101 @@
 #pragma once
-#include <cstddef>
-#include <initializer_list>
+#include "matrix_operations.h"
+#include <functional>
+#include <vector>
 
-#include "vector.h"
-
-namespace linal
+namespace matrices {
+template<typename T>
+class matrix
 {
-template <typename T> class matrix
-{
-  private:
-    T *data;
+    template<typename U>
+    friend matrix<U> operations::elementwise(
+        const matrix<U> &lhs, const matrix<U> &rhs, std::function<U(U, U)> op);
 
-  public:
-    size_t const rows, cols;
+private:
+    std::vector<T> data;
 
-    matrix(size_t rows, size_t cols) : rows(rows), cols(cols), data(new T[rows * cols])
+public:
+    const size_t rows{};
+    const size_t cols{};
+
+    matrix(const size_t rows, const size_t cols)
+        : rows(rows)
+        , cols(cols)
+        , data(rows * cols)
+    {}
+
+    matrix(std::initializer_list<std::initializer_list<T>> init)
+        : rows(init.size())
+        , cols(init.begin()->size())
+        , data(init.size() * init.begin()->size())
     {
-    }
-
-    matrix(std::initializer_list<std::initializer_list<T>> init) : rows(init.size()), cols(init.begin()->size())
-    {
-        this->data = new T[rows * cols];
-        for (auto row = init.begin(); row != init.end(); ++row)
-        {
-            for (auto col = row->begin(); col != row->end(); ++col)
-            {
-                int i = std::distance(init.begin(), row);
-                int j = std::distance(row->begin(), col);
-                this->data[i * cols + j] = *col; // std::distance
+        size_t i = 0;
+        for (const auto &row : init) {
+            for (const auto &elem : row) {
+                data[i++] = elem;
             }
         }
     }
 
-    matrix(matrix<T> &rhs) : rows(rhs.rows), cols(rhs.cols)
+    matrix() = default;
+    matrix(const matrix &rhs) = default;
+    matrix(matrix &&rhs) = default;
+    matrix &operator=(const matrix &rhs)
     {
-        this->data = new T[rows * cols];
-        std::copy(rhs.data, rhs.data + rows * cols, this->data);
-    }
-
-    matrix(matrix<T> &&rhs) noexcept : rows(rhs.rows), cols(rhs.cols)
-    {
-        this->data = new T[rows * cols];
-        std::copy(rhs.data, rhs.data + rows * cols, this->data);
-    }
-
-    matrix<T> &operator=(const matrix<T> &rhs)
-    {
-        std::copy(rhs.data, rhs.data + rows * cols, this->data);
-    }
-
-    T &operator()(int col, int row)
-    {
-        return this->data[col * cols + row];
-    }
-
-    T &operator()(int col, int row) const
-    {
-        return this->data[col * cols + row];
-    }
-
-    matrix<T> &operator+=(const matrix<T> &rhs)
-    {
-        for (size_t i = 0; i < rows * cols; ++i)
-        {
-            this->data[i] += rhs.data[i];
-        }
-
+        data = rhs.data;
         return *this;
     }
 
-    matrix<T> operator+(const matrix<T> &rhs)
+    T &operator()(int row, int col) { return this->data[row * cols + col]; }
+    const T &operator()(int row, int col) const { return this->data[row * cols + col]; }
+
+    matrix operator+(const matrix &rhs)
     {
-        matrix<T> result(rows, rhs.cols);
-
-        for (size_t i = 0; i < rows * cols; ++i)
-        {
-            result.data[i] = this->data[i] + rhs.data[i];
-        }
-
-        return result;
+        return operations::sum<T>()(*this, rhs);
     }
 
-    matrix<T> &operator-=(const matrix<T> &rhs)
+    matrix &operator+=(const matrix &rhs)
     {
-        for (size_t i = 0; i < rows * cols; ++i)
-        {
-            this->data[i] -= rhs.data[i];
-        }
-
+        *this = *this + rhs;
         return *this;
     }
 
-    matrix<T> operator-(const matrix<T> &rhs)
+    matrix operator-(const matrix &rhs)
     {
-        matrix<T> result(rows, rhs.cols);
-
-        for (size_t i = 0; i < rows * cols; ++i)
-        {
-            result.data[i] = this->data[i] - rhs.data[i];
-        }
-
-        return result;
+        return operations::difference<T>()(*this, rhs);
     }
 
-    vector<T> operator*(const vector<T> &rhs)
+    matrix &operator-=(const matrix &rhs)
     {
-        vector<T> result(cols);
-        for (size_t i = 0; i < rows * cols; ++i)
-        {                                                      // std::span std::mdspan
-            result[i % cols] += this->data[i] * rhs[i % rows]; // std::reduce std::accumulate
-        }
-
-        return result;
+        *this = *this - rhs;
+        return *this;
     }
 
-    matrix<T> operator*(const matrix<T> &rhs)
+    matrix operator*(const matrix &rhs)
     {
-        matrix<T> result(rows, rhs.cols);
-        for (size_t i = 0; i < rows; ++i)
-        {
-            for (size_t j = 0; j < cols; ++j)
-            {
-                double temp = (*this)(i, j);
-                for (size_t k = 0; k < rhs.cols; ++k)
-                {
-                    result(i, k) += temp * rhs(j, k);
-                }
-            }
-        }
+        return operations::product<T>()(*this, rhs);
+    }
 
-        return result;
+    matrix &operator*=(const matrix &rhs)
+    {
+        *this = *this * rhs;
+        return *this;
+    }
+
+    matrix operator/(const matrix &rhs)
+    {
+        return operations::quotient<T>()(*this, rhs);
+    }
+
+    matrix &operator/=(const matrix &rhs)
+    {
+        *this = *this / rhs;
+        return *this;
+    }
+
+    matrix dot(const matrix &rhs)
+    {
+        return operations::multiply<T>()(*this, rhs);
     }
 };
-} // namespace linal
+} // namespace matrices
