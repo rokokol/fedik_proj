@@ -11,6 +11,10 @@ class matrix
     friend matrix<U> operations::elementwise(
         const matrix<U> &lhs, const matrix<U> &rhs, std::function<U(U, U)> op);
 
+    template<typename U>
+    friend matrix<U> operations::elementwise_scalar(
+        const matrix<U> &lhs, const U &rhs, std::function<U(U, U)> op);
+
 private:
     std::vector<T> data;
 
@@ -49,53 +53,66 @@ public:
     T &operator()(int row, int col) { return this->data[row * cols + col]; }
     const T &operator()(int row, int col) const { return this->data[row * cols + col]; }
 
-    matrix operator+(const matrix &rhs)
-    {
-        return operations::sum<T>()(*this, rhs);
-    }
+    T at(int row, int col) { return (*this)(row, col); }
 
-    matrix &operator+=(const matrix &rhs)
+    matrix operator+(const matrix &rhs) { return operations::sum<T>()(*this, rhs); }
+
+    matrix operator+(const T &rhs) { return operations::sum_scalar<T>()(*this, rhs); }
+
+    template<typename RHS>
+    matrix &operator+=(const RHS &rhs)
     {
         *this = *this + rhs;
         return *this;
     }
 
-    matrix operator-(const matrix &rhs)
-    {
-        return operations::difference<T>()(*this, rhs);
-    }
+    matrix operator-(const matrix &rhs) { return operations::difference<T>()(*this, rhs); }
 
-    matrix &operator-=(const matrix &rhs)
+    matrix operator-(const T &rhs) { return operations::difference_scalar<T>()(*this, rhs); }
+
+    template<typename RHS>
+    matrix &operator-=(const RHS &rhs)
     {
         *this = *this - rhs;
         return *this;
     }
 
-    matrix operator*(const matrix &rhs)
-    {
-        return operations::product<T>()(*this, rhs);
-    }
+    matrix operator*(const matrix &rhs) { return operations::product<T>()(*this, rhs); }
 
-    matrix &operator*=(const matrix &rhs)
+    matrix operator*(const T &rhs) { return operations::product_scalar<T>()(*this, rhs); }
+
+    template<typename RHS>
+    matrix &operator*=(const RHS &rhs)
     {
         *this = *this * rhs;
         return *this;
     }
 
-    matrix operator/(const matrix &rhs)
-    {
-        return operations::quotient<T>()(*this, rhs);
-    }
+    matrix operator/(const matrix &rhs) { return operations::quotient<T>()(*this, rhs); }
 
-    matrix &operator/=(const matrix &rhs)
+    matrix operator/(const T &rhs) { return operations::quotient_scalar<T>()(*this, rhs); }
+
+    template<typename RHS>
+    matrix &operator/=(const RHS &rhs)
     {
         *this = *this / rhs;
         return *this;
     }
 
-    matrix dot(const matrix &rhs)
+    matrix dot(const matrix &rhs) const { return operations::multiply<T>()(*this, rhs); }
+
+    T inner_sum() { return std::reduce(data.begin(), data.end(), T(0), std::plus<T>()); }
+
+    T inner_prod() { return std::reduce(data.begin(), data.end(), T(1), std::multiplies<T>()); }
+
+    void print()
     {
-        return operations::multiply<T>()(*this, rhs);
+        for (size_t i = 0; i < rows; i++) {
+            for (size_t j = 0; j < cols; j++) {
+                std::cout << (*this)(i, j) << ",\t";
+            }
+            std::cout <<std::endl;
+        }
     }
 };
 } // namespace matrices

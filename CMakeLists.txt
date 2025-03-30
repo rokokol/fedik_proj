@@ -6,8 +6,6 @@ set(CMAKE_CXX_STANDARD 23)
 
 add_executable(fedik_proj main.cpp
         matrix.h
-        fedik_proj.cpp
-        fedik_proj.h
         lazy_tools.h
         main.cpp
         main.cpp
@@ -16,4 +14,5 @@ add_executable(fedik_proj main.cpp
         matrix_lazy.h
         matrix_operations.h
         matrix_operation.h
+        fedik_proj.h
 )

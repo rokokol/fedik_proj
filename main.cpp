@@ -3,6 +3,7 @@
 #include <random>
 #include <vector>
 
+#include "fedik_proj.h"
 #include "matrix.h"
 #include "matrix_lazy.h"
 #include "searches.h"
@@ -51,20 +52,31 @@ void test_searches()
     });
 }
 
+void test_lazy_matrices()
+{
+    matrices::matrix_lazy<int> A{{{1, 2}, {3, 4}}};
+    matrices::matrix_lazy<int> B{{{2, 0}, {0, 2}}};
+
+    for (int i = 0; i < 1'000'000; i++) {
+        (A + B).eval();
+    }
+}
+
+void test_matrices()
+{
+    matrices::matrix<int> A{{{1, 2}, {3, 4}}};
+    matrices::matrix<int> B{{{2, 0}, {0, 2}}};
+
+    for (int i = 0; i < 1'000'000; i++) {
+        A + B;
+    }
+}
+
 int main()
 {
     // test_searches();
-
-    matrices::matrix_lazy<int> A{{{1, 2}, {3, 4}}};
-
-    matrices::matrix_lazy<int> B{{{2, 0}, {0, 2}}};
-
-    auto C = (A.dot(B) + B).eval();
-    for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < 2; j++) {
-            printf("%d ", C(i, j));
-        }
-        printf("\n");
-    }
+    // measure_execution_time(test_lazy_matrices);
+    // measure_execution_time(test_matrices);
+    measure_execution_time(fedik_proj::main);
     return 0;
 }

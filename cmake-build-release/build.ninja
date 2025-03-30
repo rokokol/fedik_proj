@@ -55,12 +55,6 @@ build CMakeFiles/fedik_proj.dir/main.cpp.o: CXX_COMPILER__fedik_proj_unscanned_R
   OBJECT_DIR = CMakeFiles/fedik_proj.dir
   OBJECT_FILE_DIR = CMakeFiles/fedik_proj.dir
 
-build CMakeFiles/fedik_proj.dir/fedik_proj.cpp.o: CXX_COMPILER__fedik_proj_unscanned_Release /home/rokoko/CLionProjects/fedik_proj/fedik_proj.cpp || cmake_object_order_depends_target_fedik_proj
-  DEP_FILE = CMakeFiles/fedik_proj.dir/fedik_proj.cpp.o.d
-  FLAGS = -O3 -DNDEBUG -std=gnu++23 -fdiagnostics-color=always
-  OBJECT_DIR = CMakeFiles/fedik_proj.dir
-  OBJECT_FILE_DIR = CMakeFiles/fedik_proj.dir
-
 
 # =============================================================================
 # Link build statements for EXECUTABLE target fedik_proj
@@ -69,7 +63,7 @@ build CMakeFiles/fedik_proj.dir/fedik_proj.cpp.o: CXX_COMPILER__fedik_proj_unsca
 #############################################
 # Link the executable fedik_proj
 
-build fedik_proj: CXX_EXECUTABLE_LINKER__fedik_proj_Release CMakeFiles/fedik_proj.dir/main.cpp.o CMakeFiles/fedik_proj.dir/fedik_proj.cpp.o
+build fedik_proj: CXX_EXECUTABLE_LINKER__fedik_proj_Release CMakeFiles/fedik_proj.dir/main.cpp.o
   FLAGS = -O3 -DNDEBUG
   OBJECT_DIR = CMakeFiles/fedik_proj.dir
   POST_BUILD = :
