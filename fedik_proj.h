@@ -4,7 +4,9 @@
 #include <complex>
 
 #include <cstdio>
+#include <fstream>
 #include <functional>
+#include <iomanip>
 
 #include <valarray>
 #include <vector>
@@ -24,6 +26,10 @@ inline matrix A_def{{
     {1. / 8, 0., 3. / 8, 0., 0.},
     {1. / 2, 0., -3. / 2, 2., 0.},
 }};
+
+double constexpr m = 0.012277471;
+double constexpr M = 1 - m;
+double constexpr T = 11.124340337;
 
 inline std::vector<std::vector<double>> rungekut(
     const std::vector<std::function<double(const std::vector<double> &)>> &functions,
@@ -87,7 +93,7 @@ inline auto real_test_y(double t)
     return sin(t) / sqrt(1 + exp(2 * t));
 };
 
-inline int main()
+inline int test()
 {
     auto res = rungekut(
         {[](std::vector<double> init) -> double { return test_x(init[0], init[1], init[2]); },
@@ -128,4 +134,74 @@ inline int main()
 
     return 0;
 }
+
+inline double v1(std::vector<double> vals)
+{
+    const double x = vals[2];
+    const double y = vals[3];
+    const double v2 = vals[1];
+
+    const double R1 = pow((x + m) * (x + m) + y * y, 1.5);
+    const double R2 = pow((x - M) * (x - M) + y * y, 1.5);
+
+    return x + 2 * v2 - M * (x + m) / R1 - m * (x - M) / R2;
+}
+
+inline double v2(std::vector<double> vals)
+{
+    const double x = vals[2];
+    const double y = vals[3];
+    const double v1 = vals[0];
+
+    const double R1 = pow((x + m) * (x + m) + y * y, 1.5);
+    const double R2 = pow((x - M) * (x - M) + y * y, 1.5);
+
+    return y - 2 * v1 - M * y / R1 - m * y / R2;
+}
+
+inline double x(std::vector<double> vals)
+{
+    return vals[0];
+}
+
+inline double y(std::vector<double> vals)
+{
+    return vals[1];
+}
+
+inline int solve()
+{
+    double n = 11'124'340;
+    std::ofstream file("../main.csv");
+
+    if (file.is_open()) {
+        auto res = rungekut({v1, v2, x, y}, {0, 0, -2.031732629557337, 0.994, 0}, 0.000001, n);
+        // printf("%-6s %-10s %-10s %-10s %-10s\n", "t", "x'", "y'", "x", "y");
+        file << "t;x';y';x;y\n";
+        file << std::fixed << std::setprecision(6);
+
+        for (int i = 0; i < n; i +=1'000) {
+            auto t = res[i][0];
+            auto x_diff = res[i][1];
+            auto y_diff = res[i][2];
+            auto x = res[i][3];
+            auto y = res[i][4];
+
+            file << t << ';' << x_diff << ';' << y_diff << ';' << x << ';' << y << std::endl;;
+
+            // printf("%-6.3f %-10.6f %-10.6f %-10.6f %-10.6f\n",
+            //     t,
+            //     x_diff,
+            //     y_diff,
+            //     x,
+            //     y);
+        }
+        file.close();
+    } else {
+        std::cerr << "Не удалось открыть файл!\n";
+    }
+
+    return 0;
+}
+
 } // namespace fedik_proj
