@@ -36,19 +36,20 @@ inline std::vector<std::vector<double>> rungekut(
     const std::vector<double> &cauchy_list,
 
     double h = H,
-    int n = N,
+    int T = 5,
     int s = S,
     const matrix &A = A_def,
     const matrix &b = b_def,
     const matrix &c = c_def)
 {
-    std::vector<std::vector<double>> res(n, std::vector<double>(cauchy_list.size()));
+    std::vector<std::vector<double>> res(1);
     res[0] = cauchy_list;
     // TODO: реализовать через matrix K(s, cauchy_list.size());
     std::vector<matrix> K(cauchy_list.size() - 1, matrix(s, 1));
 
-    for (int i = 0; i < n - 1; i++) {
-        auto point_n = res[i];
+    double t = cauchy_list[0];
+    while (t < T) {
+        auto point_n = res[res.size() - 1];
         auto t_n = point_n[0];
 
         for (int j = 0; j < s; j++) {
@@ -64,10 +65,14 @@ inline std::vector<std::vector<double>> rungekut(
             } // Это тоже можно сделать через векторно-матричное умножение
         }
 
-        res[i + 1][0] = t_n + h;
+        std::vector<double> next(cauchy_list.size());
+        t = t_n + h;
+        next[0] = t;
         for (int k = 0; k < K.size(); k++) {
-            res[i + 1][k + 1] = point_n[k + 1] + h * b.dot(K[k])(0, 0);
+            next[k + 1] = point_n[k + 1] + h * b.dot(K[k])(0, 0);
         } // Это тоже можно сделать через векторно-матричное умножение
+
+        res.push_back(next);
     }
 
     return res;
@@ -95,42 +100,63 @@ inline auto real_test_y(double t)
 
 inline int test()
 {
-    auto res = rungekut(
-        {[](std::vector<double> init) -> double { return test_x(init[0], init[1], init[2]); },
-         [](std::vector<double> init) -> double { return test_y(init[0], init[1], init[2]); }},
-        {0, 1 / sqrt(2), 0});
+    // std::ofstream file("../test_scalar.csv");
 
-    double max_autox = 0;
-    double max_autoy = 0;
+    if (file.is_open()) {
+        // file << "n;errx;erry\n";
+        // file << std::fixed << std::setprecision(6);
+        // for (int n = 10'000; n < N*1000; n += 10'000) {
+            // double h = 5. / n;
+            auto res = rungekut(
+                {[](std::vector<double> init) -> double {
+                     return test_x(init[0], init[1], init[2]);
+                 },
+                 [](std::vector<double> init) -> double {
+                     return test_y(init[0], init[1], init[2]);
+                 }},
+                {0, 1 / sqrt(2), 0},
+                H);
 
-    printf("%-6s %-10s %-10s %-10s %-10s %-10s %-10s\n", "t", "x'", "x", "y'", "y", "ex", "ey");
-    for (int i = 0; i < N; i += 100000) {
-        auto t = res[i][0];
-        auto x = res[i][1];
-        auto y = res[i][2];
+            double max_autox = 0;
+            double max_autoy = 0;
 
-        auto rx = real_test_x(t);
-        auto ry = real_test_y(t);
-        auto absx = fabs(x - rx);
-        auto absy = fabs(y - ry);
+            printf(
+                "%-6s %-10s %-10s %-10s %-10s %-10s %-10s\n", "t", "x'", "x", "y'", "y", "ex", "ey");
+            for (int i = 0; i < res.size(); i += 1) {
+                auto t = res[i][0];
+                auto x = res[i][1];
+                auto y = res[i][2];
 
-        if (absx > max_autox)
-            max_autox = absx;
-        if (absy > max_autoy)
-            max_autoy = absy;
+                auto rx = real_test_x(t);
+                auto ry = real_test_y(t);
 
-        printf(
-            "%-6.3f %-10.6f %-10.6f %-10.6f %-10.6f %-10.6f %-10.6f\n",
-            t,
-            x,
-            rx,
-            y,
-            ry,
-            absx / fabs(rx),
-            absy / fabs(ry));
-    }
+                // file << t << ';' << x << ';' << y << ';' << rx << ';' << ry << std::endl;
+                auto absx = fabs(x - rx);
+                auto absy = fabs(y - ry);
 
-    // printf("%-10.6f %-10.6f", max_autox / pow(H, S), max_autoy / pow(H, S));
+                if (absx > max_autox)
+                    max_autox = absx;
+                if (absy > max_autoy)
+                    max_autoy = absy;
+
+                if (i % (N / 5) == 0)
+                    printf(
+                        "%-6.3f %-10.6f %-10.6f %-10.6f %-10.6f %-10.6f %-10.6f\n",
+                        t,
+                        x,
+                        rx,
+                        y,
+                        ry,
+                        absx / fabs(rx),
+                        absy / fabs(ry));
+            }
+
+            // file << n << ';' << max_autox / (h * h * h * h * h) << ';' << max_autox / (h * h * h * h * h) << std::endl;
+        }
+        file.close();
+    // } else {
+    //     std::cerr << "Не удалось открыть файл!\n";
+    // }
 
     return 0;
 }
@@ -180,14 +206,14 @@ inline int solve()
         file << "t;x';y';x;y\n";
         file << std::fixed << std::setprecision(6);
 
-        for (int i = 0; i < n; i +=1'000) {
+        for (int i = 0; i < n; i += 1'000) {
             auto t = res[i][0];
             auto x_diff = res[i][1];
             auto y_diff = res[i][2];
             auto x = res[i][3];
             auto y = res[i][4];
 
-            file << t << ';' << x_diff << ';' << y_diff << ';' << x << ';' << y << std::endl;;
+            file << t << ';' << x_diff << ';' << y_diff << ';' << x << ';' << y << std::endl;
 
             // printf("%-6.3f %-10.6f %-10.6f %-10.6f %-10.6f\n",
             //     t,

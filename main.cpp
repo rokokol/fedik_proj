@@ -77,6 +77,6 @@ int main()
     // test_searches();
     // measure_execution_time(test_lazy_matrices);
     // measure_execution_time(test_matrices);
-    measure_execution_time(fedik_proj::solve);
+    measure_execution_time(fedik_proj::test);
     return 0;
 }
