@@ -1,6 +1,8 @@
 #pragma once
 #include "matrix_operations.h"
 #include <functional>
+#include <iostream>
+#include <numeric>
 #include <vector>
 
 namespace matrices {
@@ -22,10 +24,14 @@ public:
     const size_t rows{};
     const size_t cols{};
 
-    matrix(const size_t rows, const size_t cols)
+    matrix(double init, const size_t rows, const size_t cols)
         : rows(rows)
         , cols(cols)
-        , data(rows * cols)
+        , data(rows * cols, init)
+    {}
+
+    matrix(const size_t rows, const size_t cols)
+        : matrix(0.0, rows, cols)
     {}
 
     matrix(std::initializer_list<std::initializer_list<T>> init)
@@ -37,6 +43,18 @@ public:
         for (const auto &row : init) {
             for (const auto &elem : row) {
                 data[i++] = elem;
+            }
+        }
+    }
+
+    matrix(const double *init, size_t rows, size_t cols)
+        : rows(rows)
+        , cols(cols)
+        , data(rows * cols)
+    {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                (*this)(i, j) = init[i * cols + j];
             }
         }
     }
@@ -111,7 +129,7 @@ public:
             for (size_t j = 0; j < cols; j++) {
                 std::cout << (*this)(i, j) << ",\t";
             }
-            std::cout <<std::endl;
+            std::cout << std::endl;
         }
     }
 };
